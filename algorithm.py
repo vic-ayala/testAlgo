@@ -16,25 +16,15 @@ the implementation follows these expressions literally, interpreting the square
 root as operating on the sum of the squared values.
 """
 
-from __future__ import annotations
-
 import csv
 import math
 import random
-from dataclasses import dataclass
 from pathlib import Path
 from typing import Iterable, List, Tuple
 
-
-@dataclass
-class IterationPairs:
-    """Represent the derived Cartesian and polar pairs per iteration."""
-
-    iteration: int
-    final_x: float
-    final_y: float
-    radius: float
-    angle: float
+# Represent each iteration's derived data as
+# (iteration, final_x, final_y, radius, angle).
+DerivedPair = Tuple[int, float, float, float, float]
 
 
 def generate_random_pairs(
@@ -43,13 +33,13 @@ def generate_random_pairs(
     samples_per_iteration: int = 3,
     value_range: Tuple[float, float] = (0.0, 5.0),
     seed: int = 2024,
-) -> List[IterationPairs]:
+) -> List[DerivedPair]:
     """Generate derived pairs based on the requested algorithm."""
 
     rng = random.Random(seed)
     lower, upper = value_range
 
-    derived_pairs: List[IterationPairs] = []
+    derived_pairs: List[DerivedPair] = []
 
     for iteration in range(1, iterations + 1):
         final_x = 0.0
@@ -64,14 +54,12 @@ def generate_random_pairs(
         radius = math.hypot(final_x, final_y)
         angle = math.atan2(final_y, final_y)
 
-        derived_pairs.append(
-            IterationPairs(iteration, final_x, final_y, radius, angle)
-        )
+        derived_pairs.append((iteration, final_x, final_y, radius, angle))
 
     return derived_pairs
 
 
-def write_pairs_to_csv(pairs: Iterable[IterationPairs], output_path: Path) -> None:
+def write_pairs_to_csv(pairs: Iterable[DerivedPair], output_path: Path) -> None:
     """Write the derived pairs to a CSV file."""
 
     output_path.parent.mkdir(parents=True, exist_ok=True)
@@ -91,11 +79,11 @@ def write_pairs_to_csv(pairs: Iterable[IterationPairs], output_path: Path) -> No
         for pair in pairs:
             writer.writerow(
                 [
-                    pair.iteration,
-                    f"{pair.final_x:.10f}",
-                    f"{pair.final_y:.10f}",
-                    f"{pair.radius:.10f}",
-                    f"{pair.angle:.10f}",
+                    pair[0],
+                    f"{pair[1]:.10f}",
+                    f"{pair[2]:.10f}",
+                    f"{pair[3]:.10f}",
+                    f"{pair[4]:.10f}",
                 ]
             )
 
