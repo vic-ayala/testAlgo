@@ -8,13 +8,12 @@ The script follows the specification provided by the user:
    ``final_x`` and ``final_y``.
 4. Two additional pairs are derived per iteration: the Cartesian pair
    ``(final_x, final_y)`` and the polar pair
-   ``(sqrt(final_x**2 + final_y**2), atan2(final_y, final_x))``.
+    ``(sqrt(final_x**2 + final_y**2), atan2(final_y, final_y))``.
 5. All derived pairs are written to a CSV file.
 
 The request described ``sqrt(final_x^2, final_y^2)`` and ``atan2(final_y, final_y)``;
-these are interpreted here as ``sqrt(final_x**2 + final_y**2)`` and
-``atan2(final_y, final_x)`` so that the polar conversion is mathematically
-consistent.
+the implementation follows these expressions literally, interpreting the square
+root as operating on the sum of the squared values.
 """
 
 from __future__ import annotations
@@ -66,7 +65,7 @@ def generate_random_pairs(
         )
 
         radius = math.hypot(final_x, final_y)
-        angle = math.atan2(final_y, final_x)
+        angle = math.atan2(final_y, final_y)
         derived_pairs.append(
             DerivedPair(iteration, "polar", radius, angle)
         )
