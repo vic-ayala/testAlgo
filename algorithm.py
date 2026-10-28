@@ -1,19 +1,16 @@
 """Generate aggregate random coordinate pairs and save to CSV.
 
-The script follows the specification provided by the user:
-1. A deterministic random seed is used (default: 2024).
-2. For each of 1,000 iterations, three random (x, y) pairs are drawn with
-   coordinates in the half-open interval [0, 5).
-3. The x- and y-components of the three pairs are summed separately to produce
-   ``final_x`` and ``final_y``.
-4. Two additional pairs are derived per iteration: the Cartesian pair
-   ``(final_x, final_y)`` and the polar pair
-   ``(sqrt(final_x**2 + final_y**2), atan2(final_y, final_y))``.
-5. Both derived pairs for each iteration are written on the same CSV line.
+1. Use a deterministic random seed (default: 2024).
+2. For each of 1,000 iterations, draw three random (x, y) pairs with
+   coordinates in the interval [0, 5].
+3. Sum the components separately to obtain ``final_x`` and ``final_y``.
+4. Convert the aggregate point to polar coordinates using
+   ``hypot(final_x, final_y)`` and ``atan2(final_y, final_x)``.
+5. Write Cartesian and polar coordinates on the same CSV line.
 
-The request described ``sqrt(final_x^2, final_y^2)`` and ``atan2(final_y, final_y)``;
-the implementation follows these expressions literally, interpreting the square
-root as operating on the sum of the squared values.
+The polar angle is in radians, measured counterclockwise from the positive
+x-axis, in the range [-pi, pi]. At the origin, the angle is conventionally
+stored as 0.0 (its mathematical value is undefined).
 """
 
 import csv
@@ -22,9 +19,13 @@ import random
 from pathlib import Path
 from typing import Iterable, List, Tuple
 
-# Represent each iteration's derived data as
-# (iteration, final_x, final_y, radius, angle).
+# (iteration, final_x, final_y, radius, angle)
 DerivedPair = Tuple[int, float, float, float, float]
+
+
+def cartesian_to_polar(x: float, y: float) -> Tuple[float, float]:
+    """Return (radius, angle in radians) for Cartesian coordinates (x, y)."""
+    return math.hypot(x, y), math.atan2(y, x)
 
 
 def generate_random_pairs(
@@ -34,7 +35,7 @@ def generate_random_pairs(
     value_range: Tuple[float, float] = (0.0, 5.0),
     seed: int = 2024,
 ) -> List[DerivedPair]:
-    """Generate derived pairs based on the requested algorithm."""
+    """Generate reproducible aggregate Cartesian and polar coordinate pairs."""
 
     rng = random.Random(seed)
     lower, upper = value_range
@@ -51,8 +52,7 @@ def generate_random_pairs(
             final_x += x
             final_y += y
 
-        radius = math.hypot(final_x, final_y)
-        angle = math.atan2(final_y, final_y)
+        radius, angle = cartesian_to_polar(final_x, final_y)
 
         derived_pairs.append((iteration, final_x, final_y, radius, angle))
 
